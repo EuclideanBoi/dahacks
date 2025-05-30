@@ -10,6 +10,7 @@ class App(tk.Tk):
         self._frame = None
         self.switch_frame(StartPage)
         self.user = None
+        self.account = None
     
     def switch_frame(self, frame):
         new_frame = frame(self)
@@ -87,11 +88,79 @@ class Register(tk.Frame):
 class Main(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
-        tk.Label(self, text="pretend theres transactions here").pack(side="top", fill="x", pady=10)
+        tk.Label(self, text="Transactions").pack(side="top", fill="x", pady=10)
+
+        self.transactionList = tk.Listbox(self, width=300)
+        balanceSheet = self.master.account.getTransactions()
+        balance = 0.00
+        for x in balanceSheet:
+            balance += float(x[3])
+            self.transactionList.insert(tk.END, x)
+        balance = str(round(balance, 2))
+
+        tk.Label(self, text="Balance: " + balance).pack(side="top", fill="x", pady=10)
+
+        self.transactionList.pack(side="top", fill="x", pady=10, padx=10)
+
+        tk.Button(self, text="New Transaction", command=lambda: master.switch_frame(Transaction)).pack()
+
+        if self.master.account.currentUser == "root":
+            tk.Button(self, text="(root) Create new user", command=lambda: master.switch_frame(NewUser)).pack()
+
         tk.Button(self, text="Logout", command=lambda: self.logout()).pack()
 
     def logout(self, event = None):
+        self.master.account = None
+        self.master.user = None
         self.master.switch_frame(StartPage)
+
+class Transaction(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        tk.Label(self, text="New Transaction").pack(side="top", fill="x", pady=10)
+        tk.Label(self, text="Enter amount and description:").pack(side="top", fill="x", pady=10)
+
+        self.amountField = ttk.Entry(self, text="Amount")
+        self.descriptionField = ttk.Entry(self, text="Description")
+
+        self.amountField.pack(pady=10)
+        self.descriptionField.pack(pady=10)
+
+        tk.Button(self, text="Commit to Ledger", command=lambda: self.postTransaction()).pack()
+
+    def postTransaction(self, event = None):
+        amount = self.amountField.get()
+        description = self.descriptionField.get()
+
+        self.master.account.newTransaction(float(amount), description)
+
+        self.master.switch_frame(Main)
+
+class NewUser(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        tk.Label(self, text="New User").pack(side="top", fill="x", pady=10)
+        tk.Label(self, text="Enter username, password, and root password:").pack(side="top", fill="x", pady=10)
+
+        self.newUsernameField = ttk.Entry(self, text="Username")
+        self.newPasswordField = ttk.Entry(self, text="Password", show='*')
+        self.rootField = ttk.Entry(self, text="Root Password", show='*')
+
+        self.newUsernameField.pack(pady=10)
+        self.newPasswordField.pack(pady=10)
+        self.rootField.pack(pady=10)
+
+        tk.Button(self, text="Register", command=lambda: self.postUser()).pack()
+        tk.Button(self, text="Cancel", command=lambda: master.switch_frame(Main)).pack()
+
+    def postUser(self, event = None):
+        username = self.newUsernameField.get()
+        password = self.newPasswordField.get()
+        rootPass = self.rootField.get()
+
+        self.master.account.registerUser(username, password, rootPass)
+
+        self.master.switch_frame(Main)
 
 if __name__ == "__main__":
     app = App()

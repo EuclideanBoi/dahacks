@@ -74,8 +74,10 @@ class Account():
             self.authenticated = True
             self.currentUser = username
             self.currentPassword = password
+            return True
         else:
             print("Auth error!")
+            return False
     
     def getTransactions(self):
         if not self.authenticated:

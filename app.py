@@ -18,43 +18,47 @@ with open("data.json", "r") as dataFile:
 '''
 
 class Account():
-    def __init__(self, accountName, rootPw):
+    def __init__(self, accountName):
+        self.accountName = accountName
+        self.accountId = None
+        self.accountInitialized = False
+        self.authenticated = False
+    
+    def registerAccount(self, rootPw):
         url = serverUrl + "/register"
         headers = {"Content-type": "application/json"}
-        jsonData = {"accountname": accountName, "rootpwhash": ph.hash(rootPw)}
+        jsonData = {"accountname": self.accountName, "rootpwhash": ph.hash(rootPw)}
 
         response = requests.post(url, headers=headers, json=jsonData)
         if response.status_code == 200:
-            print("Registered!")
-            self.accountId = response["accountid"]
+            self.accountId = response.json()["accountid"]
+            print("Registered account " + self.accountId)
 
-    def __init__(self, id):
-        self.id = id
+    def getExisting(self):
+        url = serverUrl + "/getaccount"
+        headers = {"Content-type": "application/json"}
+        jsonData = {"accountname": self.accountName}
+        response = requests.post(url, headers=headers, json=jsonData)
+        if response.status_code == 200:
+            self.accountId = response.json()["accountid"]
+            print("Got account " + self.accountId)
 
-        db = mysql.connector.connect(host="iron-pickaxe.pootislocal.net", user="paranoiadev", password="devpwd", database="apar", buffered = True)
-        dbcursor = db.cursor()
-
-        sqlcmd = "SELECT * FROM accounts WHERE accountid = %s"
-        value = (self.id, )
-        dbcursor.execute(sqlcmd, value)
-        dbaccount = dbcursor.fetchone()
-        if dbaccount is None:
-            print("Account not in database!")
-            return False
-        self.balance = dbaccount[1]
-
-        sqlcmd = "SELECT * FROM users WHERE accountid = %s"
-        dbcursor.execute(sqlcmd, value)
-        users = dbcursor.fetchall()
-
-
-    
     def changeBalance(self, amount):
         self.balance += amount
 
 class User(Account):
     def __init__(self, username, passwordIn):
         self.username = username
+        self.passwordHash = ph.hash(passwordIn)
+
+    def registerUser(self, rootpw):
+        url = serverUrl + "/adduser"
+        headers = {"Content-type": "application/json"}
+        jsonData = {"accountname": self.super().accountName, "username": self.username, "password": self.passwordHash, "rootpw": rootpw}
+
+        response = requests.post(url, headers=headers, json=jsonData)
+        if response.status_code == 200:
+            print("Registered user " + username)
 
 class Transaction(Account):
     def __init__(self, user, amount):
@@ -64,5 +68,3 @@ class Transaction(Account):
     
     def commit(self):
         super().changeBalance(amount)
-
-bruh = Account(accountName="test", rootPw="hehe")

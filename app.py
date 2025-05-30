@@ -22,8 +22,10 @@ class Account():
         self.accountName = accountName
         self.accountId = None
         self.accountInitialized = False
+
         self.authenticated = False
-        self.users = []
+        self.currentUser = None
+        self.currentPassword = None
     
     def registerAccount(self, rootPw):
         url = serverUrl + "/register"
@@ -33,6 +35,7 @@ class Account():
         response = requests.post(url, headers=headers, json=jsonData)
         if response.status_code == 200:
             self.accountId = response.json()["accountid"]
+            self.accountInitialized = True
             print("Registered account " + self.accountId)
 
     def getExisting(self):
@@ -41,6 +44,7 @@ class Account():
         jsonData = {"accountname": self.accountName}
         response = requests.post(url, headers=headers, json=jsonData)
         if response.status_code == 200:
+            self.accountInitialized = True
             self.accountId = response.json()["accountid"]
             print("Got account " + self.accountId)
 
@@ -52,6 +56,22 @@ class Account():
         response = requests.post(url, headers=headers, json=jsonData)
         if response.status_code == 200:
             print("Registered user " + username)
+        else:
+            print("reg error")
+
+    def useUser(self, username, password):
+        url = serverUrl + "/login"
+        headers = {"Content-type": "application/json"}
+        jsonData = {"accountname": self.accountName, "username": username, "password": password}
+
+        response = requests.post(url, headers=headers, json=jsonData)
+        if response.status_code == 200:
+            print("Authenticated")
+            self.authenticated = True
+            self.currentUser = username
+            self.currentPassword = password
+        else:
+            print("Auth error!")
     
     def changeBalance(self, amount):
         self.balance += amount

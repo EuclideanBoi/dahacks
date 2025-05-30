@@ -23,6 +23,7 @@ class Account():
         self.accountId = None
         self.accountInitialized = False
         self.authenticated = False
+        self.users = []
     
     def registerAccount(self, rootPw):
         url = serverUrl + "/register"
@@ -43,23 +44,22 @@ class Account():
             self.accountId = response.json()["accountid"]
             print("Got account " + self.accountId)
 
-    def changeBalance(self, amount):
-        self.balance += amount
-
-class User(Account):
-    def __init__(self, username, passwordIn):
-        self.username = username
-        self.passwordHash = ph.hash(passwordIn)
-
-    def registerUser(self, rootpw):
+    def registerUser(self, username, password, rootpw):
         url = serverUrl + "/adduser"
         headers = {"Content-type": "application/json"}
-        jsonData = {"accountname": self.super().accountName, "username": self.username, "password": self.passwordHash, "rootpw": rootpw}
+        jsonData = {"accountname": self.accountName, "username": username, "password": ph.hash(password), "rootpw": rootpw}
 
         response = requests.post(url, headers=headers, json=jsonData)
         if response.status_code == 200:
             print("Registered user " + username)
-
+    
+    def changeBalance(self, amount):
+        self.balance += amount
+'''
+class User(Account):
+    def __init__(self, username, passwordIn):
+        self.username = username
+'''
 class Transaction(Account):
     def __init__(self, user, amount):
         self.amount = amount

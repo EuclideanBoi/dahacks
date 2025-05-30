@@ -60,6 +60,10 @@ class Account():
             print("reg error")
 
     def useUser(self, username, password):
+        if not self.accountInitialized:
+            print("Account not initialized!")
+            return False
+
         url = serverUrl + "/login"
         headers = {"Content-type": "application/json"}
         jsonData = {"accountname": self.accountName, "username": username, "password": password}
@@ -73,12 +77,41 @@ class Account():
         else:
             print("Auth error!")
     
-    def changeBalance(self, amount):
-        self.balance += amount
+    def getTransactions(self):
+        if not self.authenticated:
+            print("Not authenticated!")
+            return None
+
+        url = serverUrl + "/gettransactions"
+        headers = {"Content-type": "application/json"}
+        jsonData = {"accountid": self.accountId, "username": self.currentUser, "password": self.currentPassword}
+
+        response = requests.post(url, headers=headers, json=jsonData)
+        if response.status_code == 200:
+            balance = response.json()
+            return balance
+        else:
+            print("Error")
+            return None
+
+    def newTransaction(self, amount, description):
+        if not self.authenticated:
+            print("Not authenticated!")
+            return False
+        
+        url = serverUrl + "/transaction"
+        headers = {"Content-type": "application/json"}
+        jsonData = {"accountid": self.accountId, "username": self.currentUser, "password": self.currentPassword, "amount": amount, "description": description}
+
+        response = requests.post(url, headers=headers, json=jsonData)
+        if response.status_code == 200:
+            return True
+        return False
 '''
 class User(Account):
     def __init__(self, username, passwordIn):
         self.username = username
+'''
 '''
 class Transaction(Account):
     def __init__(self, user, amount):
@@ -88,3 +121,4 @@ class Transaction(Account):
     
     def commit(self):
         super().changeBalance(amount)
+'''

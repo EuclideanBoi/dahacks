@@ -34,7 +34,7 @@ class Login(tk.Frame):
         self.usernameField = ttk.Entry(self, text="Username")
         self.passwordField = ttk.Entry(self, text="Password", show='*')
 
-        self.usernameField.focus_set()
+        self.accountField.focus_set()
         self.passwordField.bind('<Return>', self.authenticate)
 
         self.accountField.pack(pady=10)
@@ -57,18 +57,18 @@ class Login(tk.Frame):
             self.master.switch_frame(Main)
         else:
             self.master.switch_frame(Login)
-'''
+
 class Register(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
-        tk.Label(self, text="Registration page").pack(side="top", fill="x", pady=10)
-        self.usernameField = ttk.Entry(self, text="Username")
-        self.passwordField = ttk.Entry(self, text="Password", show='*')
+        tk.Label(self, text="Registration page: Enter account name and root password, sign in with root").pack(side="top", fill="x", pady=10)
+        self.accountField = ttk.Entry(self, text="Account Name")
+        self.passwordField = ttk.Entry(self, text="Root Password", show='*')
 
-        self.usernameField.focus_set()
+        self.accountField.focus_set()
         self.passwordField.bind('<Return>', self.register)
 
-        self.usernameField.pack(pady=10)
+        self.accountField.pack(pady=10)
         self.passwordField.pack(pady=10)
 
         tk.Button(self, text="Register", command=lambda: self.register()).pack()
@@ -76,13 +76,14 @@ class Register(tk.Frame):
         tk.Button(self, text="Return", command=lambda: master.switch_frame(StartPage)).pack()
 
     def register(self, event = None):
-        username = self.usernameField.get()
+        accountName = self.accountField.get()
         password = self.passwordField.get()
 
-        self.user = User(username=username, passwordIn=password, registered=False)
-        if self.user.register():
+        self.master.account = Account(accountName)
+
+        if self.master.account.registerAccount(password):
             self.master.switch_frame(Login)
-'''
+
 class Main(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)

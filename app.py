@@ -37,6 +37,8 @@ class Account():
             self.accountId = response.json()["accountid"]
             self.accountInitialized = True
             print("Registered account " + self.accountId)
+            return True
+        return False
 
     def getExisting(self):
         url = serverUrl + "/getaccount"

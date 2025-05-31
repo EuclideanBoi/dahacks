@@ -3,7 +3,10 @@ import uuid
 import json
 import requests
 import mysql.connector
+import pandas
 import numpy as np
+from sklearn import linear_model
+from datetime import datetime
 
 ph = PasswordHasher()
 
@@ -92,8 +95,8 @@ class Account():
 
         response = requests.post(url, headers=headers, json=jsonData)
         if response.status_code == 200:
-            balance = response.json()
-            return balance
+            transactions = response.json()
+            return transactions
         else:
             print("Error")
             return None
@@ -111,6 +114,26 @@ class Account():
         if response.status_code == 200:
             return True
         return False
+
+    def regression(self, prediction):
+        transactionList = self.getTransactions()
+
+        x = []
+        y = []
+
+        for i in transactionList:
+            x.append(datetime.strptime(i[4], "%m/%d/%Y %H:%M:%S").timestamp())
+            y.append(i[3])
+
+        x = np.array(x).reshape(-1, 1)
+        y = np.array(y).reshape(-1, 1)
+
+        regr = linear_model.LinearRegression()
+        regr.fit(x, y)
+
+        pred = regr.predict([[prediction]])
+
+        return [x, y, round(pred[0][0], 2)]
 '''
 class User(Account):
     def __init__(self, username, passwordIn):

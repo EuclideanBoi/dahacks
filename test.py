@@ -2,6 +2,7 @@ import app
 from app import Account
 import random
 import pandas
+import numpy as np
 from sklearn import linear_model
 from datetime import datetime
 
@@ -32,22 +33,31 @@ for x in balanceSheet:
 
 print("total: " + str(round(total, 2)))
 '''
-
+'''
 df = pandas.read_csv("money.csv")
 
 for x in range(len(df)):
-    temp = df.loc[x, 'Date']
+    temp = df.at[x, 'Date']
     if len(temp) == 8:
         temp = "0" + temp
     date = datetime.strptime(temp, "%d-%b-%y").timestamp()
-    df.at[x, 'Date'] = date
+    df.at[x, 'Date'] = int(date)
 
 pandas.to_numeric(pandas.Series(df['Amount']))
 
-x = df[['Date']]
-y = df['Amount']
+x = np.array(df['Date'].to_numpy())
+y = np.array(df['Amount'].to_numpy())
+
+x = x.reshape(-1, 1)
+y = y.reshape(-1, 1)
 
 regr = linear_model.LinearRegression()
 regr.fit(x, y)
 
-predicted = regr.predict([1530826937])
+print(regr.predict([[1530826937]]))
+print(regr.predict([[1540826937]]))
+'''
+
+datestring = "05/30/2025 13:58:30"
+date = datetime.strptime(datestring, "%m/%d/%Y %H:%M:%S").timestamp()
+print(date)

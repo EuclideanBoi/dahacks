@@ -3,6 +3,10 @@ from app import Account
 import tkinter as tk
 from tkinter import ttk
 
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+
 class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
@@ -103,6 +107,7 @@ class Main(tk.Frame):
         self.transactionList.pack(side="top", fill="x", pady=10, padx=10)
 
         tk.Button(self, text="New Transaction", command=lambda: master.switch_frame(Transaction)).pack()
+        tk.Button(self, text="Run Regression Analysis", command=lambda: master.switch_frame(Analysis)).pack()
 
         if self.master.account.currentUser == "root":
             tk.Button(self, text="(root) Create new user", command=lambda: master.switch_frame(NewUser)).pack()
@@ -127,6 +132,7 @@ class Transaction(tk.Frame):
         self.descriptionField.pack(pady=10)
 
         tk.Button(self, text="Commit to Ledger", command=lambda: self.postTransaction()).pack()
+        tk.Button(self, text="Cancel", command=lambda: master.switch_frame(Main)).pack()
 
     def postTransaction(self, event = None):
         amount = self.amountField.get()
@@ -135,6 +141,37 @@ class Transaction(tk.Frame):
         self.master.account.newTransaction(float(amount), description)
 
         self.master.switch_frame(Main)
+
+class Analysis(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        tk.Label(self, text="Data Analysis").pack(side="top", fill="x", pady=10)
+        tk.Label(self, text="Enter prediction timestamp:").pack(side="top", fill="x", pady=10)
+
+        self.timeField = ttk.Entry(self, text="Time")
+
+        self.timeField.pack(pady=10)
+
+        tk.Button(self, text="Run Regression", command=lambda: self.regress()).pack()
+        tk.Button(self, text="Return", command=lambda: master.switch_frame(Main)).pack()
+
+    def regress(self, event = None):
+        time = int(self.timeField.get())
+
+        pred = self.master.account.regression(time)
+
+        tk.Label(self, text="Predicted change: $" + str(pred[2])).pack(side="top", fill="x", pady=10)
+
+        '''
+        x = pred[0]
+        y = pred[1]
+        fig, ax = plt.subplots()
+        ax.plot(x, y, linewidth=1.0)
+        
+        canvas = FigureCanvasTkAgg(fig, master=self)
+        canvas.draw()
+        canvas.get_tk_widget().pack()
+        '''
 
 class NewUser(tk.Frame):
     def __init__(self, master):

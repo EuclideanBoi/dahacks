@@ -201,4 +201,5 @@ class NewUser(tk.Frame):
 
 if __name__ == "__main__":
     app = App()
+    app.title("Smart Ledger")
     app.mainloop()
